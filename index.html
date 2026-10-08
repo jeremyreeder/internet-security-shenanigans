@@ -1,0 +1,297 @@
+<!doctype html>
+<html lang="en">
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Internet Security Shenanigans — Classroom Lab</title>
+<style>
+  :root { font-family: ui-sans-serif, system-ui, -apple-system, sans-serif; color:#f5f7ff; background:#101426; }
+  * { box-sizing:border-box; }
+  body { margin:0; min-height:100vh; background:radial-gradient(circle at 85% 0%,#29265c 0,#101426 43%); }
+  main { max-width:1080px; margin:auto; padding:28px 18px 55px; }
+  h1 { font-size:clamp(2rem,5vw,3.7rem); margin:4px 0 10px; letter-spacing:-.04em; }
+  h2 { margin:0 0 12px; font-size:1.65rem; }
+  p { line-height:1.5; }
+  .eyebrow { color:#8cf0d1; font-weight:800; letter-spacing:.14em; text-transform:uppercase; }
+  .lead { color:#c7d1eb; max-width:65ch; margin-bottom:22px; }
+  .notice { border:1px solid #6ce4bf; background:#133329; border-radius:14px; padding:13px 16px; color:#d5fff1; }
+  nav { display:flex; flex-wrap:wrap; gap:9px; margin:24px 0; }
+  button { border:0; border-radius:11px; padding:11px 16px; font:inherit; font-weight:750; cursor:pointer; }
+  button:focus-visible,input:focus-visible { outline:3px solid #ffe587; outline-offset:3px; }
+  nav button { color:#cad3ee; background:#242c49; }
+  nav button[aria-selected="true"] { color:#0f1d1a; background:#88eccb; }
+  section { display:none; background:#1b2240; border:1px solid #465177; border-radius:22px; padding:clamp(20px,4vw,34px); box-shadow:0 20px 60px #05081666; }
+  section.active { display:block; }
+  .grid { display:grid; grid-template-columns:repeat(auto-fit,minmax(230px,1fr)); gap:15px; }
+  .card { border:1px solid #495679; background:#252e51; border-radius:16px; padding:18px; }
+  .card strong { display:block; font-size:1.1rem; margin-bottom:8px; }
+  .metric { color:#9df2d8; font-size:2rem; font-weight:850; }
+  .control { display:flex; flex-wrap:wrap; gap:10px; align-items:center; margin:17px 0; }
+  .primary { background:#8cf0d1; color:#09251e; }
+  .secondary { background:#455378; color:#fff; }
+  input { border:2px solid #7d89aa; color:#fff; background:#10172e; border-radius:10px; padding:10px 12px; font:inherit; font-size:1.15rem; width:150px; }
+  .result { min-height:58px; border-radius:13px; background:#111a31; padding:15px; margin-top:16px; font-size:1.1rem; }
+  .prompt { color:#ffe587; font-weight:800; }
+  .small { color:#c4cee7; font-size:.94rem; }
+  .url { display:block; padding:13px; background:#0c1228; color:#a6efda; border-radius:10px; overflow-wrap:anywhere; font-family:ui-monospace,monospace; }
+  .badge { display:inline-block; padding:5px 9px; border-radius:7px; font-weight:800; background:#ffe587; color:#252100; }
+  .terminal { overflow:hidden; border:1px solid #5a7090; border-radius:16px; background:#080e1b; font-family:ui-monospace,SFMono-Regular,Menlo,monospace; }
+  .terminal-bar { display:flex; gap:8px; align-items:center; padding:11px 15px; background:#202b42; color:#c8d7ee; font-size:.85rem; }
+  .terminal-dot { width:10px; height:10px; border-radius:50%; background:#ff777c; box-shadow:16px 0 #ffd46f,32px 0 #83e1ae; margin-right:37px; }
+  .terminal pre { height:225px; margin:0; padding:16px; overflow:auto; white-space:pre-wrap; overflow-wrap:anywhere; color:#b8ffdb; line-height:1.45; }
+  .terminal form { display:flex; align-items:center; gap:10px; padding:12px 15px; border-top:1px solid #3d526b; }
+  .terminal label { color:#8cf0d1; font-weight:800; }
+  .terminal input { flex:1; min-width:0; width:auto; border:0; background:transparent; font:inherit; font-size:1rem; padding:5px; }
+  .terminal form button { padding:8px 13px; }
+  .browser { overflow:hidden; border:1px solid #7c89a2; border-radius:16px; background:#fff; color:#1e2b40; box-shadow:0 12px 35px #060a1e70; }
+  .browser-chrome { background:#e9edf4; border-bottom:1px solid #c8d0df; padding:10px 12px; }
+  .browser-top { display:flex; gap:8px; align-items:center; color:#637187; font-size:.8rem; margin-bottom:9px; }
+  .browser-top .terminal-dot { transform:scale(.8); transform-origin:left center; margin-right:30px; }
+  .address { display:flex; gap:10px; align-items:center; padding:8px 12px; border:1px solid #c5cfdf; border-radius:20px; background:#fff; font-size:.92rem; overflow-wrap:anywhere; }
+  .address .indicator { white-space:nowrap; font-weight:750; }
+  .address.insecure .indicator { color:#a33928; }
+  .address.secure .indicator { color:#216d53; }
+  .address.warning .indicator { color:#a33928; }
+  .site-header { display:flex; align-items:center; gap:12px; padding:16px 22px; background:#233a80; color:white; font-weight:850; }
+  .site-header span { font-size:1.6rem; }
+  .site-header small { margin-left:auto; font-weight:500; opacity:.8; }
+  .site-body { max-width:490px; margin:0 auto; padding:24px; }
+  .site-body h3 { margin:0 0 5px; font-size:1.55rem; }
+  .site-body p { margin:6px 0 18px; }
+  .site-label { display:block; margin:10px 0 5px; font-size:.85rem; font-weight:750; }
+  .fake-field { border:1px solid #b6c2d7; border-radius:9px; padding:10px 12px; background:#f7f9fc; }
+  .site-body button { margin-top:18px; background:#3159c4; color:white; }
+  .blank-page { min-height:300px; background:#fff; }
+  .trace { min-height:170px; margin:0; padding:16px; border-radius:12px; background:#0a1020; color:#c1ffda; white-space:pre-wrap; overflow-wrap:anywhere; font: .94rem/1.5 ui-monospace,SFMono-Regular,Menlo,monospace; }
+  .warning-body { padding:28px; max-width:620px; margin:auto; }
+  .warning-icon { font-size:2.4rem; color:#c64536; }
+  .warning-body h3 { font-size:1.8rem; margin:6px 0; }
+  .warning-body code { display:inline-block; margin:4px 0 15px; color:#6e7789; }
+  .warning-body .primary { background:#3159c4; color:white; }
+  .warning-body .secondary { background:#e9edf4; color:#334055; }
+  .warning-body .result { color:#f5f7ff; }
+  .certificate-browser { position:relative; margin-left:105px; overflow:visible; }
+  .certificate-browser .browser-chrome { border-radius:15px 15px 0 0; }
+  .sketch-lurker { position:absolute; left:-126px; bottom:0; width:160px; height:auto; pointer-events:none; }
+  .sketch-lurker[hidden] { display:none; }
+  @media(max-width:600px) { .certificate-browser { margin-left:70px; } .sketch-lurker { left:-77px; width:100px; } .warning-body { padding:16px; } }
+  .bank-header { display:flex; align-items:center; justify-content:space-between; gap:12px; padding:16px 22px; background:#092e38; color:white; }
+  .bank-brand { font-size:1.2rem; font-weight:850; letter-spacing:-.02em; }
+  .bank-header small { color:#bbdadb; }
+  .bank-nav { display:flex; gap:24px; padding:10px 22px; background:#e6f2f1; color:#244e55; font-size:.9rem; }
+  .bank-nav strong { color:#0a5964; border-bottom:2px solid #0a5964; }
+  .bank-body { padding:24px; background:#f4f8f8; min-height:280px; }
+  .bank-body h3 { margin:5px 0 17px; font-size:1.5rem; }
+  .bank-account { background:white; border:1px solid #d1e0e3; border-radius:14px; padding:20px; box-shadow:0 5px 16px #092e3814; }
+  .bank-account .balance { font-size:2.1rem; font-weight:850; margin:4px 0 18px; color:#083c46; }
+  .bank-fields { display:grid; grid-template-columns:repeat(auto-fit,minmax(135px,1fr)); gap:10px; border-top:1px solid #dbe6e8; padding-top:15px; }
+  .bank-fields span { display:block; color:#627b82; font-size:.8rem; margin-bottom:4px; }
+  .bank-message { font-weight:750; color:#7e392d; background:#fff5f2; border:1px solid #e9b2a7; padding:15px; border-radius:10px; }
+  .split { display:grid; grid-template-columns:minmax(0,1.25fr) minmax(260px,.9fr); gap:18px; align-items:start; }
+  @media(max-width:760px) { .split { grid-template-columns:1fr; } }
+  footer { margin-top:25px; color:#b8c2db; }
+</style>
+<main>
+  <div class="eyebrow">A pretend security lab</div>
+  <h1>Internet Security Shenanigans</h1>
+  <p class="lead">Predict, test, and explain. Everything here runs in this browser file with made-up data. No account or internet connection is needed.</p>
+  <div class="notice"><strong>Class rule:</strong> Test only this simulation or a training site that clearly gives permission. Never enter a real password or private information.</div>
+  <nav aria-label="Choose a mission">
+    <button type="button" data-tab="https" aria-selected="true">1 · HTTPS</button>
+    <button type="button" data-tab="certificate-mission" aria-selected="false">2 · Certificate warning</button>
+    <button type="button" data-tab="password" aria-selected="false">3 · Passwords</button>
+    <button type="button" data-tab="idor" aria-selected="false">4 · Account doors</button>
+  </nav>
+
+  <section id="https" class="active" aria-label="HTTPS mission">
+    <h2>Mission 1: Watch a pretend website on the network</h2>
+    <p>The browser starts blank. Choose a protocol to load the pretend website. The login details and network trace are invented.</p>
+    <p class="prompt">Predict: What will a hallway observer see when this site sends a login over HTTP? What changes with HTTPS?</p>
+    <div class="control"><button type="button" class="secondary" id="http-mode">Use HTTP</button><button type="button" class="primary" id="https-mode">Use HTTPS</button></div>
+    <div class="split">
+      <div class="browser" aria-label="Pretend browser with a website">
+        <div class="browser-chrome"><div class="browser-top"><span class="terminal-dot" aria-hidden="true"></span>Classroom Browser · simulation</div><div class="address" id="demo-address"><span class="indicator" id="demo-indicator"></span><span id="demo-url"></span></div></div>
+        <div class="blank-page" id="blank-page" aria-label="Blank browser page"></div>
+        <div id="site-demo" hidden><div class="site-header"><span aria-hidden="true">✦</span> Star Clubhouse <small>Practice site</small></div>
+        <div class="site-body"><h3>Welcome back, stargazer</h3><p>Sign in with the pretend details below.</p><span class="site-label">Nickname</span><div class="fake-field">spacecat</div><span class="site-label">Pretend password</span><div class="fake-field">moonpanda7</div><button type="button" id="send-login">Send pretend login</button></div></div>
+      </div>
+      <div class="card"><strong>Hallway observer's network view</strong><pre class="trace" id="wire-trace" aria-live="polite">Choose HTTP or HTTPS. Then send the pretend login.</pre><p class="small">This trace shows the idea. Real packets contain more fields.</p></div>
+    </div>
+    <p class="small">HTTPS encrypts the request and verifies the destination. A network observer can often infer the destination, but cannot read the encrypted form fields. An encrypted connection does not fix bugs inside a site.</p>
+  </section>
+
+  <section id="certificate-mission" aria-label="Certificate warning mission">
+    <h2>Mission 2: Investigate a certificate warning</h2>
+    <p class="prompt">The browser requested clubhouse.example, but the certificate names games.example. Compare the address bar and the warning. What should you do?</p>
+    <div class="browser certificate-browser" aria-label="Pretend certificate warning">
+      <div class="browser-chrome"><div class="browser-top"><span class="terminal-dot" aria-hidden="true"></span>Classroom Browser · simulation</div><div class="address warning"><span class="indicator">⚠ Not secure</span><span>https://clubhouse.example/login</span></div></div>
+      <div class="warning-body"><div class="warning-icon" aria-hidden="true">⚠</div><h3>Your connection is not private</h3><p>The certificate is for <strong>games.example</strong>, but the address bar says <strong>clubhouse.example</strong>. The browser cannot verify this site's identity.</p><code>NET::ERR_CERT_COMMON_NAME_INVALID</code><div class="control"><button type="button" class="primary" id="stop">Back to safety</button><button type="button" class="secondary" id="continue">Proceed anyway (simulation)</button></div><div class="result" id="certificate" aria-live="polite">Which action protects the pretend login?</div></div>
+      <img class="sketch-lurker" id="sketch-lurker" src="lurking-sketch.png" alt="Pencil sketch of a sneaky person peeking around the browser's left edge" hidden>
+    </div>
+    <p class="small">The https:// text alone does not prove that you reached the intended site. The browser warning says it cannot verify this site's identity.</p>
+  </section>
+
+  <section id="password"  aria-label="Password mission">
+    <h2>Mission 3: Run a pretend password guesser</h2>
+    <p class="prompt">Predict: How many possible codes have three digits? What if we add one more digit?</p>
+    <div class="grid">
+      <div class="card"><strong>3-digit code</strong><span class="metric">1,000</span><p>10 × 10 × 10, including 000.</p></div>
+      <div class="card"><strong>4-digit code</strong><span class="metric">10,000</span><p>Ten times as many possibilities.</p></div>
+      <div class="card"><strong>4 random lowercase letters</strong><span class="metric">456,976</span><p>26 × 26 × 26 × 26 possibilities.</p></div>
+    </div>
+    <p>The command line below uses short, Hydra-inspired classroom commands for preset fake secrets. Choose an example, then press Run. These shortcuts are not complete Hydra commands.</p>
+    <div class="control"><button type="button" class="secondary example" data-mode="pin3">Hydra: 3-digit PIN</button><button type="button" class="secondary example" data-mode="pin4">Hydra: 4-digit PIN</button><button type="button" class="secondary example" data-mode="word">Hydra: word list</button></div>
+    <div class="terminal" aria-label="Simulated command line">
+      <div class="terminal-bar"><span class="terminal-dot" aria-hidden="true"></span>Hydra-style classroom simulator · no network requests</div>
+      <pre id="terminal-output" aria-live="polite">Simulation ready. Type hydra -h and press Enter, or choose an example above.</pre>
+      <form id="terminal-form"><label for="command">$</label><input id="command" autocomplete="off" autocapitalize="off" spellcheck="false" placeholder="hydra -h" aria-label="Hydra-style simulator command"><button type="submit" class="primary">Run</button></form>
+    </div>
+    <p class="small">The word search uses a short sample list. “Dragon” is a playable Scrabble word. This is not the complete dictionary. The simulated results do not measure real guessing speed. Real sites can enforce rate limits and other defenses.</p>
+  </section>
+
+  <section id="idor" aria-label="Access control mission">
+    <h2>Mission 4: Is the account number a key?</h2>
+    <p>You are signed in as <span class="badge">Alice Hart</span>. Alice owns account number 103. This pretend bank has accounts 1 through 109.</p>
+    <p class="prompt">Predict what happens when you change the account ID to 2, 50, or 109.</p>
+    <div class="control"><label for="account">Account ID:</label><input id="account" type="number" min="1" max="109" step="1" value="103"><button type="button" class="primary" id="open-account">Open account</button><button type="button" class="secondary" id="next-account">Next ID</button></div>
+    <div class="control"><label><input id="owner-check" type="checkbox" style="width:auto;accent-color:#8cf0d1"> Server checks who owns the account</label></div>
+    <div class="browser" aria-label="Pretend bank website">
+      <div class="browser-chrome"><div class="browser-top"><span class="terminal-dot" aria-hidden="true"></span>Classroom Browser · simulation</div><div class="address secure"><span class="indicator">Connection secure</span><span id="shown-url">https://bank.invalid/account?id=103</span></div></div>
+      <div class="bank-header"><div class="bank-brand">◈ Cedar Bank</div><small>Signed in: Alice Hart</small></div>
+      <div class="bank-nav"><strong>Accounts</strong><span>Transfers</span><span>Help</span></div>
+      <div class="bank-body"><div class="small">PERSONAL BANKING</div><h3>Account overview</h3><div class="bank-message" id="bank-message" hidden></div><div class="bank-account" id="bank-account"><div class="small" id="bank-type">Checking account</div><div class="balance" id="bank-balance">$0.00</div><div class="bank-fields"><div><span>Account holder</span><strong id="bank-owner">Alice Hart</strong></div><div><span>Account ID</span><strong id="bank-id">103</strong></div><div><span>Account number</span><strong id="bank-number">103</strong></div></div></div></div>
+    </div>
+    <p class="small">All 109 accounts contain invented data. First open another ID with the ownership check off. Turn the check on and try again. The server must check ownership on every request.</p>
+  </section>
+  <footer>Exit ticket: What can a tester change? What must the server check? Where do we have permission to test?</footer>
+</main>
+<script>
+  const $ = id => document.getElementById(id);
+  for (const button of document.querySelectorAll('[data-tab]')) {
+    button.addEventListener('click', () => {
+      document.querySelectorAll('[data-tab]').forEach(b => b.setAttribute('aria-selected', String(b === button)));
+      document.querySelectorAll('section').forEach(s => s.classList.toggle('active', s.id === button.dataset.tab));
+    });
+  }
+  const sampleWords = 'apple basket beacon bridge candle castle circle cloud comet coral cousin eagle forest garden galaxy guitar hammer island jacket jungle kitten ladder lemon magnet marble meadow monkey mountain music orange otter palace pencil planet puzzle rabbit rocket school silver soccer sparkle spirit sunset tablet tiger tunnel valley violet window winter yellow dragon zebra'.split(' ');
+  const hydraCommands = {
+    pin3: 'hydra -x 3:3:1',
+    pin4: 'hydra -x 4:4:1',
+    word: 'hydra -P sample_words.txt'
+  };
+  let guessTimer = null;
+  function writeTerminal(line) {
+    const output = $('terminal-output');
+    output.textContent += `\n${line}`;
+    output.scrollTop = output.scrollHeight;
+  }
+  function stopGuess() {
+    if (guessTimer !== null) { clearInterval(guessTimer); guessTimer = null; return true; }
+    return false;
+  }
+  function startGuess(mode) {
+    stopGuess();
+    const config = {
+      pin3: { target: '042', total: 1000, batch: 1, sampleEvery: 10, candidate: i => String(i).padStart(3, '0') },
+      pin4: { target: '1204', total: 10000, batch: 20, sampleEvery: 200, candidate: i => String(i).padStart(4, '0') },
+      word: { target: 'dragon', total: sampleWords.length, batch: 1, sampleEvery: 8, candidate: i => sampleWords[i] }
+    }[mode];
+    if (!config) return;
+    let checked = 0;
+    writeTerminal(`$ ${hydraCommands[mode]}`);
+    writeTerminal('[SIM] Testing a fictional login in this page. No target, server, or network request exists.');
+    writeTerminal(mode === 'word' ? `[SIM] sample_words.txt contains ${config.total} words.` : `[SIM] Generating ${config.total.toLocaleString()} possible ${mode === 'pin3' ? '3' : '4'}-digit codes.`);
+    guessTimer = setInterval(() => {
+      for (let step = 0; step < config.batch && checked < config.total; step++) {
+        const candidate = config.candidate(checked);
+        checked++;
+        if (checked <= 3 || checked % config.sampleEvery === 0) writeTerminal(`[SIM] try ${String(checked).padStart(4, ' ')}: student / ${candidate}`);
+        if (candidate === config.target) {
+          writeTerminal(`[SIM] login: student  password: ${candidate}`);
+          writeTerminal(`[SIM] Match after ${checked.toLocaleString()} guesses. The secret was short or appeared in the sample list.`);
+          stopGuess();
+          return;
+        }
+      }
+      if (checked >= config.total) { writeTerminal('No match in this list.'); stopGuess(); }
+    }, 35);
+  }
+  $('terminal-form').addEventListener('submit', event => {
+    event.preventDefault();
+    const command = $('command').value.trim().replace(/\s+/g, ' ');
+    $('command').value = '';
+    if (command === 'clear') { stopGuess(); $('terminal-output').textContent = 'Simulation ready. Type hydra -h and press Enter, or choose an example above.'; return; }
+    if (command === 'stop') { writeTerminal(stopGuess() ? 'Search stopped.' : 'No search is running.'); return; }
+    if (command === 'hydra -h' || command === 'help') { writeTerminal(`$ hydra -h\nClassroom shortcuts (not complete Hydra commands):\n${Object.values(hydraCommands).join('\n')}\n-x generates codes; -P reads a word list.\nSimulator helpers: cat sample_words.txt · stop · clear`); return; }
+    if (command === 'cat sample_words.txt') { writeTerminal(`$ cat sample_words.txt\n${sampleWords.join(', ')}`); return; }
+    const mode = Object.keys(hydraCommands).find(key => hydraCommands[key] === command);
+    if (mode) { startGuess(mode); return; }
+    writeTerminal('Only the three preset Hydra-style commands run in this simulation. Type hydra -h to see them.');
+  });
+  document.querySelectorAll('.example').forEach(button => button.addEventListener('click', () => { $('command').value = hydraCommands[button.dataset.mode]; $('command').focus(); }));
+  let protocol = null;
+  function setProtocol(value) {
+    protocol = value;
+    $('blank-page').hidden = true;
+    $('site-demo').hidden = false;
+    $('demo-url').textContent = `${value}://clubhouse.example/login`;
+    $('demo-indicator').textContent = value === 'http' ? 'Not secure' : 'Connection secure';
+    $('demo-address').className = `address ${value === 'http' ? 'insecure' : 'secure'}`;
+    $('http-mode').setAttribute('aria-pressed', String(value === 'http'));
+    $('https-mode').setAttribute('aria-pressed', String(value === 'https'));
+    $('wire-trace').textContent = 'Now send the pretend login. Predict what the observer will read.';
+  }
+  $('http-mode').addEventListener('click', () => setProtocol('http'));
+  $('https-mode').addEventListener('click', () => setProtocol('https'));
+  $('send-login').addEventListener('click', () => {
+    $('wire-trace').textContent = protocol === 'http'
+      ? 'POST /login HTTP/1.1\nHost: clubhouse.example\nContent-Type: application/x-www-form-urlencoded\n\nnickname=spacecat&password=moonpanda7\n\nThe observer can read the form fields.'
+      : 'Destination: clubhouse.example:443\nTLS application data (illustration):\n17 03 03 00 45 8a f0 72 ...\n\nThe request path and form fields are encrypted. The observer can often infer the destination.';
+  });
+  $('continue').addEventListener('click', () => { $('certificate').textContent = 'Sketchy.'; $('sketch-lurker').hidden = false; });
+  $('stop').addEventListener('click', () => { $('certificate').textContent = 'Good choice!'; $('sketch-lurker').hidden = true; });
+  const firstNames = ['Bob','Maya','Leo','Nina','Owen','Iris','Eli','Zoe','Noah','Ava','Liam','Mia','Jude'];
+  const lastNames = ['Hart','Vale','Chen','Ortiz','Khan','Reed','Park','Stone','Diaz','Bell','Fox','Lane'];
+  const accounts = Array.from({length:109}, (_, index) => {
+    const id = index + 1;
+    return {
+      id,
+      owner: id === 103 ? 'Alice Hart' : `${firstNames[index % firstNames.length]} ${lastNames[index % lastNames.length]}`,
+      type: id % 3 === 0 ? 'Savings account' : 'Checking account',
+      balance: 125 + ((id * 7919) % 25000) + ((id * 37) % 100) / 100,
+      number: String(id)
+    };
+  });
+  const currency = new Intl.NumberFormat('en-US', {style:'currency',currency:'USD'});
+  function openAccount() {
+    const raw = $('account').value.trim();
+    const id = Number(raw);
+    $('shown-url').textContent = `https://bank.invalid/account?id=${encodeURIComponent(raw)}`;
+    const message = $('bank-message');
+    const card = $('bank-account');
+    if (!raw || !Number.isInteger(id) || id < 1 || id > 109) {
+      message.textContent = 'Account not found. This pretend bank has IDs 1 through 109.';
+      message.hidden = false; card.hidden = true; return;
+    }
+    if ($('owner-check').checked && id !== 103) {
+      message.textContent = `Access denied. Alice Hart does not own account ${id}.`;
+      message.hidden = false; card.hidden = true; return;
+    }
+    const account = accounts[id - 1];
+    message.hidden = true; card.hidden = false;
+    $('bank-type').textContent = account.type;
+    $('bank-balance').textContent = currency.format(account.balance);
+    $('bank-owner').textContent = account.owner;
+    $('bank-id').textContent = String(account.id);
+    $('bank-number').textContent = account.number;
+  }
+  $('open-account').addEventListener('click', openAccount);
+  $('next-account').addEventListener('click', () => {
+    const id = Number($('account').value);
+    $('account').value = Number.isInteger(id) && id >= 1 && id < 109 ? String(id + 1) : '1';
+    openAccount();
+  });
+  $('owner-check').addEventListener('change', openAccount);
+  $('account').addEventListener('keydown', e => { if (e.key === 'Enter') $('open-account').click(); });
+  openAccount();
+</script>
+</html>
