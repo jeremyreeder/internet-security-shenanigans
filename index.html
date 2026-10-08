@@ -42,6 +42,17 @@
   .terminal label { color:#8cf0d1; font-weight:800; }
   .terminal input { flex:1; min-width:0; width:auto; border:0; background:transparent; font:inherit; font-size:1rem; padding:5px; }
   .terminal form button { padding:8px 13px; }
+  .stopwatch-panel { display:flex; flex-wrap:wrap; gap:28px; align-items:center; margin-top:48px; }
+  .stopwatch-panel p { flex:1; min-width:220px; }
+  .stopwatch { position:relative; width:232px; height:232px; flex:none; border:12px solid #aab8ce; border-radius:50%; background:#192443; box-shadow:0 0 0 5px #536785, 0 13px 30px #05081688, inset 0 0 0 4px #344867; }
+  .stopwatch::before { content:""; position:absolute; width:48px; height:20px; border-radius:7px 7px 2px 2px; background:#aab8ce; top:-37px; left:calc(50% - 24px); box-shadow:0 -5px 0 #536785; }
+  .stopwatch::after { content:""; position:absolute; width:22px; height:15px; border-radius:4px; background:#aab8ce; top:-19px; right:18px; transform:rotate(35deg); }
+  .stopwatch-face { display:flex; flex-direction:column; justify-content:center; align-items:center; height:100%; padding:16px; text-align:center; }
+  .stopwatch-label { color:#a7bada; font-size:.68rem; font-weight:800; letter-spacing:.12em; text-transform:uppercase; }
+  .stopwatch-days { margin-top:9px; color:#ffe587; font:700 .95rem ui-monospace,SFMono-Regular,Menlo,monospace; }
+  .stopwatch-days[hidden] { display:none; }
+  .stopwatch-time { margin-top:5px; color:#8cf0d1; font:800 1.9rem ui-monospace,SFMono-Regular,Menlo,monospace; font-variant-numeric:tabular-nums; letter-spacing:-.07em; white-space:nowrap; }
+  .stopwatch-scale { min-height:1.2em; color:#c4cee7; font-size:.82rem; }
   .browser { overflow:hidden; border:1px solid #7c89a2; border-radius:16px; background:#fff; color:#1e2b40; box-shadow:0 12px 35px #060a1e70; }
   .browser-chrome { background:#e9edf4; border-bottom:1px solid #c8d0df; padding:10px 12px; }
   .browser-top { display:flex; gap:8px; align-items:center; color:#637187; font-size:.8rem; margin-bottom:9px; }
@@ -132,20 +143,26 @@
 
   <section id="password"  aria-label="Password mission">
     <h2>Mission 3: Run a pretend password guesser</h2>
-    <p class="prompt">Predict: How many possible codes have three digits? What if we add one more digit?</p>
+    <p class="prompt">Predict: Which search has more possibilities: a 4-digit code, a dictionary word, or six lowercase letters?</p>
     <div class="grid">
-      <div class="card"><strong>3-digit code</strong><span class="metric">1,000</span><p>10 × 10 × 10, including 000.</p></div>
-      <div class="card"><strong>4-digit code</strong><span class="metric">10,000</span><p>Ten times as many possibilities.</p></div>
-      <div class="card"><strong>4 random lowercase letters</strong><span class="metric">456,976</span><p>26 × 26 × 26 × 26 possibilities.</p></div>
+      <div class="card"><strong>4-digit code</strong><span class="metric">10,000</span><p>10 × 10 × 10 × 10, including 0000.</p></div>
+      <div class="card"><strong>6 random lowercase letters</strong><span class="metric">308,915,776</span><p>26 × 26 × 26 × 26 × 26 × 26 possible strings.</p></div>
+      <div class="card"><strong>Dictionary word</strong><span class="metric">195,383</span><p>Entries in WGPO Official Words 2024, a Scrabble tournament word list.</p></div>
     </div>
     <p>The command line below uses short, Hydra-inspired classroom commands for preset fake secrets. Choose an example, then press Run. These shortcuts are not complete Hydra commands.</p>
-    <div class="control"><button type="button" class="secondary example" data-mode="pin3">Hydra: 3-digit PIN</button><button type="button" class="secondary example" data-mode="pin4">Hydra: 4-digit PIN</button><button type="button" class="secondary example" data-mode="word">Hydra: word list</button></div>
+    <div class="control"><button type="button" class="secondary example" data-mode="pin4">Hydra: 4-digit PIN</button><button type="button" class="secondary example" data-mode="letters6">Hydra: 6 letters</button><button type="button" class="secondary example" data-mode="word">Hydra: word list</button></div>
     <div class="terminal" aria-label="Simulated command line">
       <div class="terminal-bar"><span class="terminal-dot" aria-hidden="true"></span>Hydra-style classroom simulator · no network requests</div>
       <pre id="terminal-output" aria-live="polite">Simulation ready. Type hydra -h and press Enter, or choose an example above.</pre>
       <form id="terminal-form"><label for="command">$</label><input id="command" autocomplete="off" autocapitalize="off" spellcheck="false" placeholder="hydra -h" aria-label="Hydra-style simulator command"><button type="submit" class="primary">Run</button></form>
     </div>
-    <p class="small">The word search uses a short sample list. “Dragon” is a playable Scrabble word. This is not the complete dictionary. The simulated results do not measure real guessing speed. Real sites can enforce rate limits and other defenses.</p>
+    <div class="stopwatch-panel">
+      <div class="stopwatch" role="timer" aria-label="Simulated elapsed time">
+        <div class="stopwatch-face"><span class="stopwatch-label">Simulated elapsed time</span><span class="stopwatch-days" id="guess-days" hidden></span><span class="stopwatch-time" id="guess-elapsed">00:00:00</span><span class="stopwatch-scale" id="guess-scale"></span></div>
+      </div>
+      <p class="small">Estimate: 100 online login attempts per second against a fictional site with no rate limit or lockout. This is an aggressive rate; actual speed depends on the site and connection, and a protected site may stop the attack. The animation runs in fast-forward.</p>
+    </div>
+    <p class="small">The virtual scrabble_dict.txt follows selected positions in WGPO Official Words 2024: 195,383 entries, with “dragon” at position 50,513. “Slithy” is Lewis Carroll's six-letter nonsense word and is absent from this list. It is still a human-chosen password.</p>
   </section>
 
   <section id="idor" aria-label="Access control mission">
@@ -172,13 +189,29 @@
       document.querySelectorAll('section').forEach(s => s.classList.toggle('active', s.id === button.dataset.tab));
     });
   }
-  const sampleWords = 'apple basket beacon bridge candle castle circle cloud comet coral cousin eagle forest garden galaxy guitar hammer island jacket jungle kitten ladder lemon magnet marble meadow monkey mountain music orange otter palace pencil planet puzzle rabbit rocket school silver soccer sparkle spirit sunset tablet tiger tunnel valley violet window winter yellow dragon zebra'.split(' ');
+  const dictionaryCount = 195383;
+  const dictionarySamples = new Map([
+    [1, 'aa'], [2, 'aah'], [3, 'aahed'], [1000, 'acculturative'],
+    [10000, 'astrolabe'], [25000, 'carpenter'], [50000, 'dosseret'],
+    [50512, 'dragomen'], [50513, 'dragon']
+  ]);
+  const letters6 = i => {
+    let value = i;
+    let candidate = '';
+    for (let place = 0; place < 6; place++) {
+      candidate = String.fromCharCode(97 + value % 26) + candidate;
+      value = Math.floor(value / 26);
+    }
+    return candidate;
+  };
+  const letterRank = word => [...word].reduce((rank, letter) => rank * 26 + letter.charCodeAt(0) - 97, 0) + 1;
   const hydraCommands = {
-    pin3: 'hydra -x 3:3:1',
     pin4: 'hydra -x 4:4:1',
-    word: 'hydra -P sample_words.txt'
+    letters6: 'hydra -x 6:6:a',
+    word: 'hydra -P scrabble_dict.txt'
   };
   let guessTimer = null;
+  const onlineGuessRate = 100;
   function writeTerminal(line) {
     const output = $('terminal-output');
     output.textContent += `\n${line}`;
@@ -188,41 +221,62 @@
     if (guessTimer !== null) { clearInterval(guessTimer); guessTimer = null; return true; }
     return false;
   }
+  function formatElapsed(seconds) {
+    const days = Math.floor(seconds / 86400);
+    const hours = Math.floor(seconds % 86400 / 3600);
+    const minutes = Math.floor(seconds % 3600 / 60);
+    const remainingSeconds = seconds % 60;
+    const clock = [hours, minutes, remainingSeconds].map(part => String(part).padStart(2, '0')).join(':');
+    return days ? `${days.toLocaleString()} days ${clock}` : clock;
+  }
+  function showElapsed(guesses) {
+    const seconds = Math.ceil(guesses / onlineGuessRate);
+    const days = Math.floor(seconds / 86400);
+    $('guess-days').hidden = days === 0;
+    $('guess-days').textContent = `${days.toLocaleString()} ${days === 1 ? 'day' : 'days'}`;
+    $('guess-elapsed').textContent = formatElapsed(seconds).split(' ').at(-1);
+    $('guess-scale').textContent = days >= 365 ? `≈ ${(seconds / (365 * 86400)).toFixed(1)} years` : '';
+  }
   function startGuess(mode) {
     stopGuess();
     const config = {
-      pin3: { target: '042', total: 1000, batch: 1, sampleEvery: 10, candidate: i => String(i).padStart(3, '0') },
-      pin4: { target: '1204', total: 10000, batch: 20, sampleEvery: 200, candidate: i => String(i).padStart(4, '0') },
-      word: { target: 'dragon', total: sampleWords.length, batch: 1, sampleEvery: 8, candidate: i => sampleWords[i] }
+      pin4: { target: '1204', total: 10000, matchAt: 1205, batch: 20, samples: [1, 2, 3, 200, 400, 600, 800, 1000, 1200, 1204, 1205], candidate: n => String(n - 1).padStart(4, '0') },
+      letters6: { target: 'slithy', total: 26 ** 6, matchAt: letterRank('slithy'), batch: 2000000, samples: [1, 2, 3, 20000000, 40000000, 60000000, 80000000, 100000000, 120000000, 140000000, 160000000, 180000000, 200000000, letterRank('slithy') - 1, letterRank('slithy')], candidate: n => letters6(n - 1) },
+      word: { target: 'dragon', total: dictionaryCount, matchAt: 50513, batch: 750, samples: [...dictionarySamples.keys()], candidate: n => dictionarySamples.get(n) }
     }[mode];
     if (!config) return;
     let checked = 0;
+    showElapsed(0);
     writeTerminal(`$ ${hydraCommands[mode]}`);
     writeTerminal('[SIM] Testing a fictional login in this page. No target, server, or network request exists.');
-    writeTerminal(mode === 'word' ? `[SIM] sample_words.txt contains ${config.total} words.` : `[SIM] Generating ${config.total.toLocaleString()} possible ${mode === 'pin3' ? '3' : '4'}-digit codes.`);
+    writeTerminal(mode === 'word' ? `[SIM] Virtual scrabble_dict.txt contains ${config.total.toLocaleString()} alphabetical entries (WGPO WOW24).` : `[SIM] Generating ${config.total.toLocaleString()} possible ${mode === 'pin4' ? '4-digit codes' : '6-letter lowercase strings'}.`);
+    writeTerminal('[SIM] Fast-forward playback: intermediate tries are hidden.');
     guessTimer = setInterval(() => {
-      for (let step = 0; step < config.batch && checked < config.total; step++) {
-        const candidate = config.candidate(checked);
-        checked++;
-        if (checked <= 3 || checked % config.sampleEvery === 0) writeTerminal(`[SIM] try ${String(checked).padStart(4, ' ')}: student / ${candidate}`);
-        if (candidate === config.target) {
-          writeTerminal(`[SIM] login: student  password: ${candidate}`);
-          writeTerminal(`[SIM] Match after ${checked.toLocaleString()} guesses. The secret was short or appeared in the sample list.`);
-          stopGuess();
-          return;
+      const next = Math.min(checked + config.batch, config.matchAt);
+      for (const position of config.samples) {
+        if (position > checked && position <= next) {
+          writeTerminal(`[SIM] try ${position.toLocaleString().padStart(11, ' ')}: student / ${config.candidate(position)}`);
         }
       }
-      if (checked >= config.total) { writeTerminal('No match in this list.'); stopGuess(); }
+      checked = next;
+      showElapsed(checked);
+      if (checked === config.matchAt) {
+        writeTerminal(`[SIM] login: student  password: ${config.target}`);
+        writeTerminal(`[SIM] Match after ${checked.toLocaleString()} simulated guesses.`);
+        writeTerminal(`[SIM] Estimated online time at ${onlineGuessRate} attempts/second: ${formatElapsed(Math.ceil(checked / onlineGuessRate))}.`);
+        stopGuess();
+      }
     }, 35);
   }
   $('terminal-form').addEventListener('submit', event => {
     event.preventDefault();
     const command = $('command').value.trim().replace(/\s+/g, ' ');
     $('command').value = '';
-    if (command === 'clear') { stopGuess(); $('terminal-output').textContent = 'Simulation ready. Type hydra -h and press Enter, or choose an example above.'; return; }
+    if (command === 'clear') { stopGuess(); $('terminal-output').textContent = 'Simulation ready. Type hydra -h and press Enter, or choose an example above.'; showElapsed(0); return; }
     if (command === 'stop') { writeTerminal(stopGuess() ? 'Search stopped.' : 'No search is running.'); return; }
-    if (command === 'hydra -h' || command === 'help') { writeTerminal(`$ hydra -h\nClassroom shortcuts (not complete Hydra commands):\n${Object.values(hydraCommands).join('\n')}\n-x generates codes; -P reads a word list.\nSimulator helpers: cat sample_words.txt · stop · clear`); return; }
-    if (command === 'cat sample_words.txt') { writeTerminal(`$ cat sample_words.txt\n${sampleWords.join(', ')}`); return; }
+    if (command === 'hydra -h' || command === 'help') { writeTerminal(`$ hydra -h\nClassroom shortcuts (not complete Hydra commands):\n${Object.values(hydraCommands).join('\n')}\n-x generates codes or letters; -P reads a word list.\nSimulator helpers: wc -l scrabble_dict.txt · head scrabble_dict.txt · stop · clear`); return; }
+    if (command === 'wc -l scrabble_dict.txt') { writeTerminal(`$ wc -l scrabble_dict.txt\n${dictionaryCount} scrabble_dict.txt (virtual file)`); return; }
+    if (command === 'head scrabble_dict.txt') { writeTerminal('$ head scrabble_dict.txt\naa\naah\naahed\naahing\naahs\naal\naalii\naaliis\naals\naardvark'); return; }
     const mode = Object.keys(hydraCommands).find(key => hydraCommands[key] === command);
     if (mode) { startGuess(mode); return; }
     writeTerminal('Only the three preset Hydra-style commands run in this simulation. Type hydra -h to see them.');
