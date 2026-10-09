@@ -101,6 +101,9 @@
   .split { display:grid; grid-template-columns:minmax(0,1.25fr) minmax(260px,.9fr); gap:18px; align-items:start; }
   @media(max-width:760px) { .split { grid-template-columns:1fr; } }
   footer { margin-top:25px; color:#b8c2db; }
+  .copyright { margin-top:18px; padding-top:12px; border-top:1px solid #465177; font-size:.78rem; }
+  .copyright a { color:#8cf0d1; font-weight:750; }
+  .copyright a:focus-visible { outline:3px solid #ffe587; outline-offset:3px; }
 </style>
 <main>
   <div class="eyebrow">A pretend security lab</div>
@@ -181,7 +184,7 @@
     </div>
     <p class="small">All 109 accounts contain invented data. First open another ID with the ownership check off. Turn the check on and try again. The server must check ownership on every request.</p>
   </section>
-  <footer>Exit ticket: What can a tester change? What must the server check? Where do we have permission to test?</footer>
+  <footer><div>Exit ticket: What can a tester change? What must the server check? Where do we have permission to test?</div><div class="copyright">Copyright © 2026 <a href="https://www.gridscout.net">GridScout</a></div></footer>
 </main>
 <script>
   const $ = id => document.getElementById(id);
