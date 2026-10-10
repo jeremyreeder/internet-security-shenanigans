@@ -129,7 +129,7 @@
         <div id="site-demo" hidden><div class="site-header"><span aria-hidden="true">✦</span> Star Clubhouse <small>Practice site</small></div>
         <div class="site-body"><h3>Welcome back, stargazer</h3><p>Sign in with the pretend details below.</p><span class="site-label">Nickname</span><div class="fake-field">spacecat</div><span class="site-label">Pretend password</span><div class="fake-field">moonpanda7</div><button type="button" id="send-login">Send pretend login</button></div></div>
       </div>
-      <div class="card"><strong>Network observer's packet view</strong><pre class="trace" id="wire-trace" aria-live="polite">(To find out, first choose HTTP or HTTPS, then log in.)</pre><p class="small">This trace shows the idea. Real packets contain more fields.</p></div>
+      <div class="card"><strong>Network observer's packet view</strong><pre class="trace" id="wire-trace" aria-live="polite">(Nothing to see here yet. First choose HTTP or HTTPS.)</pre><p class="small">This trace shows the idea. Real packets contain more fields.</p></div>
     </div>
     <p class="small">HTTPS encrypts the request and verifies the destination. A network observer can often infer the destination, but cannot read the encrypted form fields. An encrypted connection does not fix bugs inside a site.</p>
   </section>
@@ -302,14 +302,14 @@
     $('demo-address').className = `address ${value === 'http' ? 'insecure' : 'secure'}`;
     $('http-mode').setAttribute('aria-pressed', String(value === 'http'));
     $('https-mode').setAttribute('aria-pressed', String(value === 'https'));
-    $('wire-trace').textContent = 'Now send the pretend login. Predict what the observer will read.';
+    $('wire-trace').textContent = '(Now send the pretend login. What do you predict the observer will see here?)';
   }
   $('http-mode').addEventListener('click', () => setProtocol('http'));
   $('https-mode').addEventListener('click', () => setProtocol('https'));
   $('send-login').addEventListener('click', () => {
     $('wire-trace').textContent = protocol === 'http'
-      ? 'POST /login HTTP/1.1\nHost: clubhouse.example\nContent-Type: application/x-www-form-urlencoded\n\nnickname=spacecat&password=moonpanda7\n\nThe observer can read the form fields.'
-      : 'Destination: clubhouse.example:443\nTLS application data (illustration):\n17 03 03 00 45 8a f0 72 ...\n\nThe request path and form fields are encrypted. The observer can often infer the destination.';
+      ? 'POST /login HTTP/1.1\nHost: clubhouse.example\nContent-Type: application/x-www-form-urlencoded\n\nnickname=spacecat&password=moonpanda7\n\n(The observer can read the form fields.)'
+      : 'Destination: clubhouse.example:443\nTLS application data (illustration):\n17 03 03 00 45 8a f0 72 ...\n\n(The request path and form fields are encrypted. The observer can often infer the destination.)';
   });
   $('continue').addEventListener('click', () => { $('certificate').textContent = 'Sketchy.'; $('sketch-lurker').hidden = false; });
   $('stop').addEventListener('click', () => { $('certificate').textContent = 'Good choice!'; $('sketch-lurker').hidden = true; });
