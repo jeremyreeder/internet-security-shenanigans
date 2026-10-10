@@ -120,7 +120,7 @@
   <section id="https" class="active" aria-label="HTTPS mission">
     <h2>Mission 1: Watch a pretend website on the network</h2>
     <p>The browser starts blank. Choose a protocol to load the pretend website. The login details and network trace are invented.</p>
-    <p class="prompt">Predict: What will a hallway observer see when this site sends a login over HTTP? What changes with HTTPS?</p>
+    <p class="prompt">Predict: What will a network observer see when this site sends a login over HTTP? What changes with HTTPS?</p>
     <div class="control"><button type="button" class="secondary" id="http-mode">Use HTTP</button><button type="button" class="secondary" id="https-mode">Use HTTPS</button></div>
     <div class="split">
       <div class="browser" aria-label="Pretend browser with a website">
@@ -129,7 +129,7 @@
         <div id="site-demo" hidden><div class="site-header"><span aria-hidden="true">✦</span> Star Clubhouse <small>Practice site</small></div>
         <div class="site-body"><h3>Welcome back, stargazer</h3><p>Sign in with the pretend details below.</p><span class="site-label">Nickname</span><div class="fake-field">spacecat</div><span class="site-label">Pretend password</span><div class="fake-field">moonpanda7</div><button type="button" id="send-login">Send pretend login</button></div></div>
       </div>
-      <div class="card"><strong>Hallway observer's network view</strong><pre class="trace" id="wire-trace" aria-live="polite">Choose HTTP or HTTPS. Then send the pretend login.</pre><p class="small">This trace shows the idea. Real packets contain more fields.</p></div>
+      <div class="card"><strong>Network observer's packet view</strong><pre class="trace" id="wire-trace" aria-live="polite">(To find out, first choose HTTP or HTTPS, then log in.)</pre><p class="small">This trace shows the idea. Real packets contain more fields.</p></div>
     </div>
     <p class="small">HTTPS encrypts the request and verifies the destination. A network observer can often infer the destination, but cannot read the encrypted form fields. An encrypted connection does not fix bugs inside a site.</p>
   </section>
